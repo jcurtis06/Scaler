@@ -1,4 +1,9 @@
-main: io.jcurtis.kotlinexample.KotlinPaper
+main: io.jcurtis.scaler.Scaler
 version: 1.0
-name: KotlinPaper
+name: Scaler
 api-version: 1.19
+commands:
+  scaler:
+    description: Scales the player
+    usage: /<command> <scale>
+    permission: scaler.use
