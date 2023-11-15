@@ -7,6 +7,7 @@ import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
 import java.util.UUID
+import kotlin.math.round
 
 object ScaleManager {
     val selections = mutableMapOf<UUID, Selection>()
@@ -14,18 +15,21 @@ object ScaleManager {
 
     fun scaleSelection(player: Player, scale: Float = 1f) {
         val selection = selections[player.uniqueId] ?: return
-        Bukkit.getLogger().info("Scaling selection for ${player.name} with scale $scale")
         val blocks = selection.getBlocks()
         val loc = player.location
         loc.yaw = 0f
         loc.pitch = 0f
 
-        for (block in blocks) {
+        for ((i, block) in blocks.withIndex()) {
             placeBlock(block, loc, selection.pointA!!, scale, "scale-${scales.size}")
-            Bukkit.getLogger().info("Placed block at ${block.location}")
+
+            if (i % (blocks.size / 10) == 0 && blocks.isNotEmpty() && i != 0) {
+                player.sendMessage("Scaled ${round(i / (blocks.size / 100.0))}%")
+            }
         }
 
         scales["scale-${scales.size}"] = player.uniqueId
+        player.sendMessage("Scale has been created!")
     }
 
     fun deleteScale(player: Player, scale: String) {
@@ -49,7 +53,6 @@ object ScaleManager {
     }
 
     fun undoScale(player: Player) {
-        // get the last scale that the player created
         val lastScale = scales.keys.lastOrNull { scales[it] == player.uniqueId } ?: run {
             player.sendMessage("You have no scales to undo!")
             return
