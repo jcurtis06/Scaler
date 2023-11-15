@@ -1,6 +1,5 @@
 package io.jcurtis.scaler
 
-import org.bukkit.Material
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
@@ -21,9 +20,10 @@ class Scaler: JavaPlugin(), Listener {
     fun playerInteract(e: PlayerInteractEvent) {
         val p = e.player
 
-        if (p.inventory.itemInMainHand.type != Material.STICK) return
+        if (p.inventory.itemInMainHand.itemMeta?.displayName != "§6Region Selection Tool") return
         if (e.action != Action.LEFT_CLICK_BLOCK && e.action != Action.RIGHT_CLICK_BLOCK) return
 
+        e.isCancelled = true
         val selection: Selection
 
         if (ScaleManager.selections.containsKey(p.uniqueId)) {
@@ -34,6 +34,7 @@ class Scaler: JavaPlugin(), Listener {
         }
 
         if (e.action == Action.LEFT_CLICK_BLOCK) {
+            selection.reset()
             selection.pointA = e.clickedBlock?.location
             p.sendMessage("Point A set to ${selection.pointA?.x}, ${selection.pointA?.y}, ${selection.pointA?.z}")
         } else if (e.action == Action.RIGHT_CLICK_BLOCK) {

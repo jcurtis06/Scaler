@@ -14,7 +14,7 @@ class Selection {
         if (pointA == null || pointB == null) return emptyList()
 
         val blocks = mutableListOf<Block>()
-        val world = pointA!!.world
+        val world = pointA!!.world!!
 
         val minX = min(pointA!!.blockX, pointB!!.blockX)
         val minY = min(pointA!!.blockY, pointB!!.blockY)
@@ -35,5 +35,10 @@ class Selection {
         }
 
         return blocks
+    }
+
+    fun reset() {
+        pointA = null
+        pointB = null
     }
 }

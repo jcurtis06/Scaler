@@ -17,8 +17,12 @@ version = '1.0'
 repositories {
     mavenCentral()
     maven {
-        name = 'papermc-repo'
-        url = 'https://repo.papermc.io/repository/maven-public/'
+        name = 'spigot-repo'
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+        content {
+            includeGroup 'org.bukkit'
+            includeGroup 'org.spigotmc'
+        }
     }
     maven {
         name = 'sonatype'
@@ -27,7 +31,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'io.papermc.paper:paper-api:' + paperVersion
+    compileOnly 'org.spigotmc:spigot-api:' + paperVersion
     shadow "org.jetbrains.kotlin:kotlin-stdlib:" + kotlinVersion
 }
 
