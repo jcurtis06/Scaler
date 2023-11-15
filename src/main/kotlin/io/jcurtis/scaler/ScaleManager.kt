@@ -6,26 +6,31 @@ import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.EntityType
+import org.bukkit.entity.Player
+import java.util.UUID
 
 object ScaleManager {
-    var pointA: Location? = null
-    var pointB: Location? = null
+    val selections = mutableMapOf<UUID, Selection>()
 
-    fun scaleTo(loc: Location, scale: Float = 1f) {
-        val blocks = getBlocksInRegion(pointA!!, pointB!!)
+    fun scaleSelection(player: Player, scale: Float = 1f) {
+        val selection = selections[player.uniqueId] ?: return
+        Bukkit.getLogger().info("Scaling selection for ${player.name} with scale $scale")
+        val blocks = selection.getBlocks()
+        val loc = player.location
         loc.yaw = 0f
         loc.pitch = 0f
 
         for (block in blocks) {
-            placeBlock(block, loc, scale)
+            placeBlock(block, loc, selection.pointA!!, scale)
+            Bukkit.getLogger().info("Placed block at ${block.location}")
         }
     }
 
-    private fun placeBlock(block: Block, center: Location, scale: Float) {
-        val blockRelativeLocation = block.location.clone().subtract(pointA!!)
+    private fun placeBlock(block: Block, toLoc: Location, origin: Location, scale: Float) {
+        val blockRelativeLocation = block.location.clone().subtract(origin)
         blockRelativeLocation.multiply(scale.toDouble())
 
-        val displayLocation = center.clone().add(blockRelativeLocation)
+        val displayLocation = toLoc.clone().add(blockRelativeLocation)
 
         val world = Bukkit.getWorld(block.world.uid)
         val display = world?.spawnEntity(displayLocation, EntityType.BLOCK_DISPLAY) as? BlockDisplay
@@ -34,30 +39,5 @@ object ScaleManager {
         val transform = display?.transformation
         transform?.scale?.set(scale, scale, scale)
         display?.transformation = transform!!
-    }
-
-    private fun getBlocksInRegion(a: Location, b: Location): List<Block> {
-        val blocks = mutableListOf<Block>()
-        val world = a.world
-
-        val minX = Math.min(a.blockX, b.blockX)
-        val minY = Math.min(a.blockY, b.blockY)
-        val minZ = Math.min(a.blockZ, b.blockZ)
-
-        val maxX = Math.max(a.blockX, b.blockX)
-        val maxY = Math.max(a.blockY, b.blockY)
-        val maxZ = Math.max(a.blockZ, b.blockZ)
-
-        for (x in minX..maxX) {
-            for (y in minY..maxY) {
-                for (z in minZ..maxZ) {
-                    val block = world.getBlockAt(x, y, z)
-                    if (block.type == Material.AIR) continue
-                    blocks.add(world.getBlockAt(x, y, z))
-                }
-            }
-        }
-
-        return blocks
     }
 }
