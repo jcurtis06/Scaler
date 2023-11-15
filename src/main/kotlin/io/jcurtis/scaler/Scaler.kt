@@ -1,7 +1,5 @@
 package io.jcurtis.scaler
 
-import org.bukkit.Bukkit
-import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -12,10 +10,9 @@ import org.bukkit.plugin.java.JavaPlugin
 @Suppress("unused")
 class Scaler: JavaPlugin(), Listener {
     override fun onEnable() {
-        // register events
         server.pluginManager.registerEvents(this, this)
 
-        getCommand("scaler")?.setExecutor(ScalerCMD())
+        getCommand("scaler")?.setExecutor(ScaleCMD())
 
         logger.info("Scaler has been enabled!")
     }
@@ -25,13 +22,23 @@ class Scaler: JavaPlugin(), Listener {
         val p = e.player
 
         if (p.inventory.itemInMainHand.type != Material.STICK) return
+        if (e.action != Action.LEFT_CLICK_BLOCK && e.action != Action.RIGHT_CLICK_BLOCK) return
+
+        val selection: Selection
+
+        if (ScaleManager.selections.containsKey(p.uniqueId)) {
+            selection = ScaleManager.selections[p.uniqueId]!!
+        } else {
+            selection = Selection()
+            ScaleManager.selections[p.uniqueId] = selection
+        }
 
         if (e.action == Action.LEFT_CLICK_BLOCK) {
-            ScaleManager.pointA = e.clickedBlock?.location
-            p.sendMessage("Point A set to ${ScaleManager.pointA!!.blockX}, ${ScaleManager.pointA!!.blockY}, ${ScaleManager.pointA!!.blockZ}")
+            selection.pointA = e.clickedBlock?.location
+            p.sendMessage("Point A set to ${selection.pointA?.x}, ${selection.pointA?.y}, ${selection.pointA?.z}")
         } else if (e.action == Action.RIGHT_CLICK_BLOCK) {
-            ScaleManager.pointB = e.clickedBlock?.location
-            p.sendMessage("Point B set to ${ScaleManager.pointB!!.blockX}, ${ScaleManager.pointB!!.blockY}, ${ScaleManager.pointB!!.blockZ}")
+            selection.pointB = e.clickedBlock?.location
+            p.sendMessage("Point B set to ${selection.pointB?.x}, ${selection.pointB?.y}, ${selection.pointB?.z}")
         }
     }
 }
