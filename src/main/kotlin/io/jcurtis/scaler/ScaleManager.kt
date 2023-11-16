@@ -6,6 +6,7 @@ import org.bukkit.block.Block
 import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
+import org.bukkit.event.block.Action
 import java.util.UUID
 import kotlin.math.round
 
@@ -13,19 +14,42 @@ object ScaleManager {
     val selections = mutableMapOf<UUID, Selection>()
     val scales = mutableMapOf<String, UUID>()
 
+    fun setSelection(player: Player, point: Int, loc: Location): Selection {
+        val selection: Selection
+
+        if (selections.containsKey(player.uniqueId)) {
+            selection = selections[player.uniqueId]!!
+        } else {
+            selection = Selection()
+            selections[player.uniqueId] = selection
+        }
+
+        val roundedLoc = Location(loc.world, round(loc.x), round(loc.y), round(loc.z))
+
+        if (point == 0) {
+            selection.reset()
+            selection.pointA = roundedLoc
+            player.sendMessage("Point A set to ${selection.pointA?.x}, ${selection.pointA?.y}, ${selection.pointA?.z}")
+        } else if (point == 1) {
+            selection.pointB = roundedLoc
+            player.sendMessage("Point B set to ${selection.pointB?.x}, ${selection.pointB?.y}, ${selection.pointB?.z}")
+        }
+
+        return selection
+    }
+
     fun scaleSelection(player: Player, scale: Float = 1f) {
-        val selection = selections[player.uniqueId] ?: return
+        val selection = selections[player.uniqueId] ?: run {
+            player.sendMessage("You have no selection!")
+            return
+        }
         val blocks = selection.getBlocks()
         val loc = player.location
         loc.yaw = 0f
         loc.pitch = 0f
 
-        for ((i, block) in blocks.withIndex()) {
+        for (block in blocks) {
             placeBlock(block, loc, selection.pointA!!, scale, "scale-${scales.size}")
-
-            if (i % (blocks.size / 10) == 0 && blocks.isNotEmpty() && i != 0) {
-                player.sendMessage("Scaled ${round(i / (blocks.size / 100.0))}%")
-            }
         }
 
         scales["scale-${scales.size}"] = player.uniqueId
